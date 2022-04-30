@@ -1035,15 +1035,32 @@ end, "player")
 addCommand("chatlogs", "logs chat", function()
     NotificationSystem.Notify("Starting to log messages...", 5)
 
+    local Has_Synapse = false;
+
+    if (syn) then
+        Has_Synapse = true;
+        NotificationSystem.Notify("You have synapse x! Translation will be enabled.", 5)
+    else
+        NotificationSystem.Notify("You don't have synapse x! Translation will be disabled.", 5)
+    end
+
     Players.PlayerAdded:Connect(function(Player)
         universalAdmin.Events.ChatLogs[Player.Name] = Player.Chatted:Connect(function(Message)
-            NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
+            if (syn) then
+                NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
+            else
+                NotificationSystem.Notify("<"..Player.Name.."> "..Message, 5)
+            end
         end)
     end)
 
     for _, Player in pairs(Players:GetPlayers()) do
         universalAdmin.Events.ChatLogs[Player.Name] = Player.Chatted:Connect(function(Message)
-            NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
+            if (syn) then
+                NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
+            else
+                NotificationSystem.Notify("<"..Player.Name.."> "..Message, 5)
+            end
         end)
     end
 end)
