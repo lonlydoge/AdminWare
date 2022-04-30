@@ -1069,9 +1069,8 @@ addCommand("nochatlogs", "stops logging", function()
     for _, v in pairs(universalAdmin.Events.ChatLogs) do
         v:Disconnect()
         v = nil
-
-        NotificationSystem.Notify("Stopped logging messages from "..v, 5)
     end
+    NotificationSystem.Notify("Stopped logging messages", 5)
 end)
 
 -- end of Admin script
