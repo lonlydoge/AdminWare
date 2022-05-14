@@ -5,6 +5,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
+local InsertService = game:GetService("InsertService")
 
 local TranslationSystem = loadstring(game:HttpGet("https://raw.githubusercontent.com/lonlydoge/TranslationSystem/main/main.lua"))()
 local NotificationSystem = loadstring(game:HttpGet("https://raw.githubusercontent.com/lonlydoge/NotificationSystem/main/main.lua"))()
@@ -18,232 +19,43 @@ end
 warn("Waiting for events to reset")
 wait(0.1)
 
+if CoreGui:FindFirstChild("UI") then
+    CoreGui["UI"]:Destroy()
+end
+
+if ReplicatedStorage:FindFirstChild("Container") then
+    ReplicatedStorage["Container"]:Destroy()
+end
+
 -- gui loading
 
-local UI = Instance.new("ScreenGui")
-local IntroGui = Instance.new("Frame")
-local Headbar = Instance.new("Frame")
-local UIGradient = Instance.new("UIGradient")
-local UICorner = Instance.new("UICorner")
-local MainText = Instance.new("TextLabel")
-local UICorner_2 = Instance.new("UICorner")
-local TextLabel = Instance.new("TextLabel")
-local LoadingText = Instance.new("TextLabel")
-local UIGradient_2 = Instance.new("UIGradient")
-local LoadingBar = Instance.new("Frame")
-local UICorner_3 = Instance.new("UICorner")
-local LoadingBarThing = Instance.new("Frame")
-local UICorner_4 = Instance.new("UICorner")
-local UIGradient_3 = Instance.new("UIGradient")
-local CommandBar = Instance.new("Frame")
-local UICorner_5 = Instance.new("UICorner")
-local Frame = Instance.new("Frame")
-local UIGradient_4 = Instance.new("UIGradient")
-local TextBox = Instance.new("TextBox")
-local CommandList = Instance.new("Frame")
-local UICorner_6 = Instance.new("UICorner")
-local ScrollBar = Instance.new("ScrollingFrame")
-local UICorner_7 = Instance.new("UICorner")
-local Positioner = Instance.new("UIListLayout")
-local Container = Instance.new("Frame")
-local Text = Instance.new("Frame")
-local UIGradient_5 = Instance.new("UIGradient")
-local TextLabel_2 = Instance.new("TextLabel")
-local CommandsLabel = Instance.new("TextLabel")
+local UI = InsertService:LoadLocalAsset("rbxassetid://9625648426"):Clone();
 
---Properties:
+local Container = UI.CommandList.ScrollBar.Container
 
-UI.Name = "UI"
-UI.Parent = CoreGui
-
-IntroGui.Name = "IntroGui"
-IntroGui.Parent = UI
-IntroGui.BackgroundColor3 = Color3.fromRGB(33, 33, 33)
-IntroGui.AnchorPoint = Vector2.new(0.5, 0.5)
-IntroGui.Position = UDim2.new(0.5, 0, 0.5, 0)
-IntroGui.Size = UDim2.new(0, 617, 0, 370)
-IntroGui.Visible = true
-
-Headbar.Name = "Headbar"
-Headbar.Parent = IntroGui
-Headbar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Headbar.BorderSizePixel = 0
-Headbar.ClipsDescendants = true
-Headbar.Size = UDim2.new(0, 617, 0, 40)
-
-UIGradient.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(85, 0, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(115, 0, 255))}
-UIGradient.Parent = Headbar
-
-UICorner.Parent = Headbar
-
-MainText.Name = "MainText"
-MainText.Parent = Headbar
-MainText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MainText.BackgroundTransparency = 1.000
-MainText.Position = UDim2.new(0.0145867094, 0, 0.230769232, 0)
-MainText.Size = UDim2.new(0, 598, 0, 21)
-MainText.Font = Enum.Font.GothamSemibold
-MainText.Text = "AdminWare"
-MainText.TextColor3 = Color3.fromRGB(255, 255, 255)
-MainText.TextScaled = true
-MainText.TextSize = 14.000
-MainText.TextWrapped = true
-
-UICorner_2.Parent = IntroGui
-
-TextLabel.Parent = IntroGui
-TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel.BackgroundTransparency = 1.000
-TextLabel.Position = UDim2.new(0.335991532, 0, 0.406196088, 0)
-TextLabel.Size = UDim2.new(0, 200, 0, 30)
-TextLabel.Font = Enum.Font.GothamSemibold
-TextLabel.Text = "Welcome, "..LocalPlayer.Name
-TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel.TextScaled = true
-TextLabel.TextSize = 14.000
-TextLabel.TextWrapped = true
-
-LoadingText.Name = "LoadingText"
-LoadingText.Parent = TextLabel
-LoadingText.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-LoadingText.BackgroundTransparency = 1.000
-LoadingText.Position = UDim2.new(0.0421150215, 0, 0.774775207, 0)
-LoadingText.Size = UDim2.new(0, 184, 0, 16)
-LoadingText.Font = Enum.Font.GothamSemibold
-LoadingText.Text = "Loading..."
-LoadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
-LoadingText.TextScaled = true
-LoadingText.TextSize = 14.000
-LoadingText.TextWrapped = true
-
-UIGradient_2.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(85, 0, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(142, 3, 255))}
-UIGradient_2.Parent = LoadingText
-
-LoadingBar.Name = "LoadingBar"
-LoadingBar.Parent = TextLabel
-LoadingBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-LoadingBar.Position = UDim2.new(-0.494959503, 0, 1.60090089, 0)
-LoadingBar.Size = UDim2.new(0, 397, 0, 14)
-
-UICorner_3.CornerRadius = UDim.new(0, 4)
-UICorner_3.Parent = LoadingBar
-
-LoadingBarThing.Name = "LoadingBarThing"
-LoadingBarThing.Parent = LoadingBar
-LoadingBarThing.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-LoadingBarThing.Size = UDim2.new(0, 8, 0, 14)
-
-UICorner_4.CornerRadius = UDim.new(0, 4)
-UICorner_4.Parent = LoadingBarThing
-
-UIGradient_3.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(85, 0, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(115, 0, 255))}
-UIGradient_3.Parent = LoadingBarThing
-
-CommandBar.Name = "CommandBar"
-CommandBar.Parent = UI
-CommandBar.AnchorPoint = Vector2.new(0.5, 0.5)
-CommandBar.BackgroundColor3 = Color3.fromRGB(33, 33, 33)
-CommandBar.AnchorPoint = Vector2.new(0.5, 0.5)
-CommandBar.Visible = true
-CommandBar.Size = UDim2.new(0, 529, 0, 44)
-CommandBar.Position = UDim2.new(0.5, 0, 1, CommandBar.Size.Y.Offset)
-CommandBar.BackgroundTransparency = 1
-
-UICorner_5.Parent = CommandBar
-
-Frame.Parent = CommandBar
-Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Frame.BorderSizePixel = 0
-Frame.Position = UDim2.new(0.0359168239, 0, 0.75, 0)
-Frame.Size = UDim2.new(0, 491, 0, 2)
-
-UIGradient_4.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(85, 0, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(115, 0, 255))}
-UIGradient_4.Parent = Frame
-
-TextBox.Parent = CommandBar
-TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.BackgroundTransparency = 1.000
-TextBox.BorderSizePixel = 0
-TextBox.Position = UDim2.new(0.0359168239, 0, 0.227272734, 0)
-TextBox.Size = UDim2.new(0, 491, 0, 20)
-TextBox.Font = Enum.Font.Gotham
-TextBox.PlaceholderColor3 = Color3.fromRGB(214, 214, 214)
-TextBox.PlaceholderText = "Enter A Command"
-TextBox.Text = ""
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.TextScaled = true
-TextBox.TextSize = 14.000
-TextBox.TextWrapped = true
-
-CommandList.Name = "CommandList"
-CommandList.Parent = UI
-CommandList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-CommandList.Position = UDim2.new(-0.1, 0, 0.5, 0)
-CommandList.AnchorPoint = Vector2.new(0.5, 0.5)
-CommandList.Size = UDim2.new(0, 285, 0, 364)
-CommandList.Visible = true
-CommandList.Draggable = true
-CommandList.Active = true
-
-UICorner_6.Parent = CommandList
-
-CommandsLabel.Name = "CommandsLabel"
-CommandsLabel.Parent = CommandList
-CommandsLabel.BackgroundTransparency = 1
-CommandsLabel.Font = "Gotham"
-CommandsLabel.Position = UDim2.new(0.5, 0, 0, 15)
-CommandsLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-CommandsLabel.Size = UDim2.new(0, 142, 0, 20)
-CommandsLabel.TextScaled = true
-CommandsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-CommandsLabel.Text = "Commands"
-
-ScrollBar.Name = "ScrollBar"
-ScrollBar.Parent = CommandList
-ScrollBar.Active = true
-ScrollBar.BackgroundColor3 = Color3.fromRGB(33, 33, 33)
-ScrollBar.BorderColor3 = Color3.fromRGB(27, 42, 53)
-ScrollBar.Position = UDim2.new(0.0566437244, 0, 0.0875975192, 0)
-ScrollBar.Size = UDim2.new(0, 251, 0, 302)
-ScrollBar.ScrollBarThickness = 10
-
-UICorner_7.Parent = ScrollBar
-
-Positioner.Name = "Positioner"
-Positioner.Parent = ScrollBar
-Positioner.SortOrder = Enum.SortOrder.LayoutOrder
-Positioner.Padding = UDim.new(0, 25)
-
-Container.Name = "Container"
 Container.Parent = ReplicatedStorage
-Container.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Container.BackgroundTransparency = 1.000
-Container.Position = UDim2.new(0.100202426, 0, 0.456260651, 0)
-Container.Size = UDim2.new(0, 228, 0, 36)
 
-Text.Name = "Text"
-Text.Parent = Container
-Text.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-Text.BorderSizePixel = 0
-Text.Position = UDim2.new(-0.000183045864, 0, 0.939203858, 0)
-Text.Size = UDim2.new(0, 228, 0, 2)
+UI.CommandList.BackgroundTransparency = 1
+UI.CommandList.Visible = false
+Container.TextLabel.TextTransparency = 1
+Container.TextLabel.Description.TextTransparency = 1
 
-UIGradient_5.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(85, 0, 255)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(115, 0, 255))}
-UIGradient_5.Parent = Text
+UI.CommandBar.BackgroundTransparency = 1
+UI.CommandBar.TextBox.TextTransparency = 1
+UI.CommandBar.ImageButton.ImageTransparency = 1
+UI.CommandBar.Position = UDim2.new(0.5, 0, 1, 35)
 
-TextLabel_2.Parent = Text
-TextLabel_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel_2.BackgroundTransparency = 1.000
-TextLabel_2.Position = UDim2.new(-0.000743053854, 0, -13.8056335, 0)
-TextLabel_2.Size = UDim2.new(0, 200, 0, 21)
-TextLabel_2.Font = Enum.Font.Gotham
-TextLabel_2.Text = "Cmd"
-TextLabel_2.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel_2.TextScaled = true
-TextLabel_2.TextSize = 14.000
-TextLabel_2.TextWrapped = true
-TextLabel_2.TextXAlignment = Enum.TextXAlignment.Left
+UI.IntroGui.BackgroundTransparency = 1
+UI.IntroGui.Headbar.BackgroundTransparency = 1
+UI.IntroGui.Headbar.MainText.TextTransparency = 1
+UI.IntroGui.Headbar.Icon.ImageTransparency = 1
 
+UI.IntroGui.TextLabel.TextTransparency = 1
+UI.IntroGui.TextLabel.LoadingBar.BackgroundTransparency = 1
+UI.IntroGui.TextLabel.LoadingBar.LoadingBarThing.BackgroundTransparency = 1
+UI.IntroGui.TextLabel.LoadingText.TextTransparency = 1
+
+UI.Parent = game.CoreGui
 
 -- ok it finished :)
 
@@ -409,6 +221,7 @@ local function commandCheck(Message, CommandBar)
     else
         noPrefixMessage = Splitted[1]:sub(2)
     end
+
     local args = {} -- spoderman wanted
         
     for i, v in pairs(Splitted) do
@@ -434,12 +247,20 @@ end -- wait ill test something
 local function openCmdBar()
     if not universalAdmin.Debounce then
         universalAdmin.Debounce = true
-        local openCmdBarTween = TweenService:Create(CommandBar, TweenInfo.new(.7, Enum.EasingStyle.Circular, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, 0, 1, -(CommandBar.Size.Y.Offset * 2))})
-        local fadeText = TweenService:Create(CommandBar, TweenInfo.new(.7), {BackgroundTransparency = 0})
+        
+        local openCmdBarTween = TweenService:Create(UI.CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, -100)})
+        local fadeBar = TweenService:Create(UI.CommandBar, TweenInfo.new(.7, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+        local fadeText = TweenService:Create(UI.CommandBar.TextBox, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 0})
+        local fadeIcon = TweenService:Create(UI.CommandBar.ImageButton, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 0})
+        
         openCmdBarTween:Play()
+        fadeBar:Play()
         fadeText:Play()
+        fadeIcon:Play()
+        
         wait(.35)
-        TextBox:CaptureFocus()
+        
+        UI.CommandBar.TextBox:CaptureFocus()
         universalAdmin.Debounce = false
     end
 end 
@@ -447,11 +268,19 @@ end
 local function closeCmdBar()
     if not universalAdmin.Debounce then
         universalAdmin.Debounce = true
-        local closeCmdBarTween = TweenService:Create(CommandBar, TweenInfo.new(.7, Enum.EasingStyle.Circular, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, 0, 1, CommandBar.Size.Y.Offset)})
-        local fadeText = TweenService:Create(CommandBar, TweenInfo.new(.7), {BackgroundTransparency = 1})
-        closeCmdBarTween:Play()
+        
+        local openCmdBarTween = TweenService:Create(UI.CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, 35)})
+        local fadeBar = TweenService:Create(UI.CommandBar, TweenInfo.new(.7, Enum.EasingStyle.Quint), {BackgroundTransparency = 1})
+        local fadeText = TweenService:Create(UI.CommandBar.TextBox, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 1})
+        local fadeIcon = TweenService:Create(UI.CommandBar.ImageButton, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 1})
+        
+        openCmdBarTween:Play()
+        fadeBar:Play()
         fadeText:Play()
+        fadeIcon:Play()
+        
         wait(.35)
+        
         universalAdmin.Debounce = false
     end
 end
@@ -500,9 +329,9 @@ local function isAnchored(Character)
     return false
 end
 
-Positioner:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    local absoluteSize = Positioner.AbsoluteContentSize
-    ScrollBar.CanvasSize = UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y + 25)
+UI.CommandList.ScrollBar.Positioner:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    local absoluteSize = UI.CommandList.ScrollBar.Positioner.AbsoluteContentSize
+    UI.CommandList.ScrollBar.CanvasSize = UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y + 50)
 end)
 
 universalAdmin.Events.prefixTrigger = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
@@ -515,34 +344,82 @@ universalAdmin.Events.prefixTrigger = UserInputService.InputBegan:Connect(functi
     end
 end)
 
-TextBox.FocusLost:Connect(function(Enter)
+UI.CommandBar.TextBox.FocusLost:Connect(function(Enter)
     if not universalAdmin.Debounce and Enter then
         spawn(function()
-            commandCheck(TextBox.Text, true)
+            commandCheck(UI.CommandBar.TextBox.Text, true)
         end)
         closeCmdBar()
-        TextBox.Text = ""
+        UI.CommandBar.TextBox.Text = ""
     end
 end)
 
-local OpeningTween = TweenService:Create(LoadingBarThing, TweenInfo.new(5), {Size = UDim2.new(0, 397, 0, 14)})
-OpeningTween:Play()
-OpeningTween.Completed:wait()
+UI.CommandBar.ImageButton.MouseButton1Click:Connect(function()
+    spawn(closeCmdBar)
+    
+    UI.CommandList.Visible = true
+    
+    local commandsTween = TweenService:Create(UI.CommandList, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+    commandsTween:Play()
 
-LoadingText.Text = "Loaded!"
-wait(1.5)
+    commandsTween.Completed:Wait()
 
-local ClosingTween = TweenService:Create(IntroGui, TweenInfo.new(1), {Size = UDim2.new(0, 0, IntroGui.Size.Y.Scale, IntroGui.Size.Y.Offset)})
-ClosingTween:Play()
+    for _, v in ipairs(UI.CommandList.ScrollBar:GetDescendants()) do
+        if v.Name == "Container" then
+            local TextLabelTween = TweenService:Create(v.TextLabel, TweenInfo.new(.025, Enum.EasingStyle.Quint), {TextTransparency = 0})
+            TextLabelTween:Play()
 
-for i, v in pairs(IntroGui:GetDescendants()) do
-    if not v:IsA("UICorner") and not v:IsA("UIGradient") then
-        local ClosingTween = TweenService:Create(v, TweenInfo.new(1), {Size = UDim2.new(0, 0, v.Size.Y.Scale, v.Size.Y.Offset)})
-        ClosingTween:Play()
+            local DescriptionTween = TweenService:Create(v.TextLabel.Description, TweenInfo.new(.025, Enum.EasingStyle.Quint), {TextTransparency = 0})
+            DescriptionTween:Play()
+
+            DescriptionTween.Completed:Wait()
+        end
+    end
+end)
+
+local IntroGuiTweens = {
+    ["Headbar"] = "BackgroundTransparency",
+    ["MainText"] = "TextTransparency",
+    ["TextLabel"] = "TextTransparency",
+    ["LoadingBar"] = "BackgroundTransparency",
+    ["LoadingBarThing"] = "BackgroundTransparency",
+    ["LoadingText"] = "TextTransparency",
+    ["Icon"] = "ImageTransparency"
+}
+
+local MainIntroGuiTween = TweenService:Create(UI.IntroGui, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+MainIntroGuiTween:Play()
+MainIntroGuiTween.Completed:Wait()
+
+for _, v in ipairs(UI.IntroGui:GetDescendants()) do
+    if IntroGuiTweens[v.Name] then
+        local Tween = TweenService:Create(v, TweenInfo.new(.25, Enum.EasingStyle.Quint), {[IntroGuiTweens[v.Name]] = 0})
+
+        Tween:Play()
+        Tween.Completed:wait()
     end
 end
+
+local LoadingBarTween = TweenService:Create(UI.IntroGui.TextLabel.LoadingBar.LoadingBarThing, TweenInfo.new(5, Enum.EasingStyle.Quint), {Size = UI.IntroGui.TextLabel.LoadingBar.Size})
+LoadingBarTween:Play()
+LoadingBarTween.Completed:wait()
+
 wait(1)
-IntroGui:Destroy()
+
+for _, v in ipairs(UI.IntroGui:GetDescendants()) do
+    if IntroGuiTweens[v.Name] then
+        local Tween = TweenService:Create(v, TweenInfo.new(.25, Enum.EasingStyle.Quint), {[IntroGuiTweens[v.Name]] = 1})
+
+        Tween:Play()
+        Tween.Completed:wait()
+    end
+end
+
+local MainIntroGuiTween = TweenService:Create(UI.IntroGui, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 1})
+MainIntroGuiTween:Play()
+MainIntroGuiTween.Completed:Wait()
+
+UI.IntroGui:Destroy()
 
 universalAdmin.Debounce = false
 
@@ -554,8 +431,24 @@ end)
 
 --commands
 addCommand("commands/cmds", "opens commands menu", function()
-    local commandsTween = TweenService:Create(CommandList, TweenInfo.new(.75, Enum.EasingStyle.Circular, Enum.EasingDirection.Out), {Position = UDim2.new(0.1, 0, 0.5, 0)})
+    UI.CommandList.Visible = true
+    
+    local commandsTween = TweenService:Create(UI.CommandList, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
     commandsTween:Play()
+
+    commandsTween.Completed:Wait()
+
+    for _, v in ipairs(UI.CommandList.ScrollBar:GetDescendants()) do
+        if v.Name == "Container" then
+            local TextLabelTween = TweenService:Create(v.TextLabel, TweenInfo.new(.025, Enum.EasingStyle.Quint), {TextTransparency = 0})
+            TextLabelTween:Play()
+
+            local DescriptionTween = TweenService:Create(v.TextLabel.Description, TweenInfo.new(.025, Enum.EasingStyle.Quint), {TextTransparency = 0})
+            DescriptionTween:Play()
+
+            DescriptionTween.Completed:Wait()
+        end
+    end
 end)
 
 addCommand("infjump", "makes you infinite jump", function() 
@@ -577,15 +470,6 @@ end, "number")
 addCommand("walkspeed", "set your walk speed", function(value) 
     LocalPlayer.Character.Humanoid.WalkSpeed = value
 end, "number")
-
-addCommand("notify/notification", "roblox notification", function(title, message, duration) 
-    game.StarterGui:SetCore("SendNotification", {
-        Title = title;
-        Text = message;
-        Duration = duration;
-    })
-end, "title, message, duration")
-
 
 addCommand("goto", "teleports you to a player", function(player)
     local Target = getPlayer(player)
@@ -1042,11 +926,12 @@ addCommand("chatlogs", "logs chat", function()
         NotificationSystem.Notify("You have synapse x! Translation will be enabled.", 5)
     else
         NotificationSystem.Notify("You don't have synapse x! Translation will be disabled.", 5)
+        NotificationSystem.Notify("We're currently searching for a method that isn't syn x only.", 5)
     end
 
     Players.PlayerAdded:Connect(function(Player)
         universalAdmin.Events.ChatLogs[Player.Name] = Player.Chatted:Connect(function(Message)
-            if (syn) then
+            if Has_Synapse then
                 NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
             else
                 NotificationSystem.Notify("<"..Player.Name.."> "..Message, 5)
@@ -1056,7 +941,7 @@ addCommand("chatlogs", "logs chat", function()
 
     for _, Player in pairs(Players:GetPlayers()) do
         universalAdmin.Events.ChatLogs[Player.Name] = Player.Chatted:Connect(function(Message)
-            if (syn) then
+            if Has_Synapse then
                 NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
             else
                 NotificationSystem.Notify("<"..Player.Name.."> "..Message, 5)
@@ -1082,24 +967,29 @@ table.sort(universalAdmin.Commands, function(a, b)
 end)
 
 
-for i, v in ipairs(universalAdmin.Commands) do
+for _, v in ipairs(universalAdmin.Commands) do
     local clonedContainer = Container:Clone()
 
     if v[4] then
-        clonedContainer.Text.TextLabel.Text = v[1].." { "..v[4].." }"
+        clonedContainer.TextLabel.Text = v[1].." { "..v[4].." }"
     else
-        clonedContainer.Text.TextLabel.Text = v[1]
+        clonedContainer.TextLabel.Text = v[1]
     end
-    clonedContainer.Parent = ScrollBar
+
+    clonedContainer.TextLabel.Description.Text = v[2]
+    
+    clonedContainer.Parent = UI.CommandList.ScrollBar
 end
 
 spawn(function()
     repeat game:GetService("RunService").Heartbeat:wait() until not CoreGui:FindFirstChild("UI")
 
     for i, v in pairs(universalAdmin.Events) do
-        if v then
-            v:Disconnect()
-        end
+        pcall(function()
+            if v then
+                v:Disconnect()
+            end
+        end)
     end
 
     universalAdmin = nil
