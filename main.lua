@@ -37,6 +37,8 @@ local Container = UI.CommandList.ScrollBar.Container
 
 Container.Parent = ReplicatedStorage
 
+UI.IntroGui:Destroy()
+
 UI.CommandList.BackgroundTransparency = 1
 UI.CommandList.Visible = false
 Container.TextLabel.TextTransparency = 1
@@ -46,16 +48,6 @@ UI.CommandBar.BackgroundTransparency = 1
 UI.CommandBar.TextBox.TextTransparency = 1
 UI.CommandBar.ImageButton.ImageTransparency = 1
 UI.CommandBar.Position = UDim2.new(0.5, 0, 1, 35)
-
-UI.IntroGui.BackgroundTransparency = 1
-UI.IntroGui.Headbar.BackgroundTransparency = 1
-UI.IntroGui.Headbar.MainText.TextTransparency = 1
-UI.IntroGui.Headbar.Icon.ImageTransparency = 1
-
-UI.IntroGui.TextLabel.TextTransparency = 1
-UI.IntroGui.TextLabel.LoadingBar.BackgroundTransparency = 1
-UI.IntroGui.TextLabel.LoadingBar.LoadingBarThing.BackgroundTransparency = 1
-UI.IntroGui.TextLabel.LoadingText.TextTransparency = 1
 
 UI.Parent = game.CoreGui
 
@@ -69,68 +61,6 @@ local universalAdmin = {
 }
 
 local RespawnTimes = {}
-
-coroutine.wrap(function()
-    local function doIt()
-        Players.PlayerAdded:Connect(function(Player)
-            Player.CharacterAdded:Wait()
-
-            spawn(function()
-                RespawnTimes[Player.Name] = 0
-                
-                universalAdmin.Events[Player.Name] = Player.CharacterAdded:Connect(function()
-                    RespawnTimes[Player.Name] = 0
-                    Player.Character:WaitForChild("Humanoid")
-                    while Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Dead do
-                        RespawnTimes[Player.Name] = RespawnTimes[Player.Name] + 0.02
-                        if universalAdmin == nil then
-                            return
-                        end
-                        wait(0.01)
-                    end
-                end)
-                RespawnTimes[Player.Name] = 0
-                Player.Character:WaitForChild("Humanoid")
-                while Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Dead do
-                    RespawnTimes[Player.Name] = RespawnTimes[Player.Name] + 0.02
-                    if universalAdmin == nil then
-                        return
-                    end
-                    wait(0.01)
-                end
-            end)
-        end)
-
-        for _, Player in pairs(Players:GetPlayers()) do
-            spawn(function()
-                RespawnTimes[Player.Name] = 0
-
-                universalAdmin.Events[Player.Name] = Player.CharacterAdded:Connect(function()
-                    RespawnTimes[Player.Name] = 0
-                    Player.Character:WaitForChild("Humanoid")
-                    while Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Dead do
-                        RespawnTimes[Player.Name] = RespawnTimes[Player.Name] + 0.02
-                        if universalAdmin == nil then
-                            return
-                        end
-                        wait(0.01)
-                    end
-                end)
-                RespawnTimes[Player.Name] = 0
-                Player.Character:WaitForChild("Humanoid")
-                while Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character.Humanoid:GetState() ~= Enum.HumanoidStateType.Dead do
-                    RespawnTimes[Player.Name] = RespawnTimes[Player.Name] + 0.02
-                    if universalAdmin == nil then
-                        return
-                    end
-                    wait(0.01)
-                end
-            end)
-        end
-    end
-
-    doIt()
-end)()
 
 local function getKeyFromValue(table, value)
     for i, v in ipairs(table) do -- i want it organized
@@ -148,6 +78,15 @@ local function getIndex(Table, item)
     end
 end
 
+repeat task.wait() until universalAdmin["Events"];
+
+local PlayerAdded = function(Player)
+    RespawnTimes[Player.Name] = tick();
+    universalAdmin.Events[Player] = Player.CharacterAdded:Connect(function()
+        RespawnTimes[Player.Name] = tick();
+    end)
+end
+
 local function getTool()
     for i, v in pairs(LocalPlayer.Backpack:GetChildren()) do
         if v:FindFirstChild("Handle") and v:IsA("Tool") then
@@ -158,7 +97,11 @@ local function getTool()
     return nil
 end
 
-local function addCommand(commandname, description, mainfunction, cmdargs)
+local getRoot = function(Character)
+    return Character and Character:FindFirstChild("HumanoidRootPart") or Character:FindFirstChild("Torso") or Character:FindFirstChild("LowerTorso")
+end
+
+local function Define(commandname, description, mainfunction, cmdargs)
     for i, v in pairs(universalAdmin.Commands) do
         if string.lower(v[1]) == string.lower(commandname) then
             return nil
@@ -295,6 +238,48 @@ local cframeTool = function(tool, pos)
     tool.Grip = Frame
 end
 
+local AttachTool = function(Tool, Position)
+    for _, Object in pairs(Tool:GetDescendants()) do
+        if not (Object:IsA("BasePart") or Object:IsA("Mesh") or Object:IsA("SpecialMesh")) then
+            Object:Destroy()
+        end
+    end
+
+    local RightGrip1 = Instance.new("Weld")
+
+	RightGrip1.Name = "RightGrip"
+
+	RightGrip1.Part0 = LocalPlayer.Character:FindFirstChild("RightLowerArm") or LocalPlayer.Character:FindFirstChild("Right Arm")
+	RightGrip1.Part1 = Tool.Handle
+
+	RightGrip1.C0 = Position
+	RightGrip1.C1 = Tool.Grip
+
+	RightGrip1.Parent = LocalPlayer.Character:FindFirstChild("RightLowerArm") or LocalPlayer.Character:FindFirstChild("Right Arm")
+
+    Tool.Parent = LocalPlayer.Backpack
+    Tool.Parent = LocalPlayer.Character.Humanoid
+    Tool.Parent = LocalPlayer.Character
+    
+    Tool.Handle:BreakJoints()
+
+    Tool.Parent = LocalPlayer.Backpack
+    Tool.Parent = LocalPlayer.Character.Humanoid
+
+    local RightGrip2 = Instance.new("Weld")
+	RightGrip2.Name = "RightGrip"
+
+	RightGrip2.Part0 = LocalPlayer.Character:FindFirstChild("RightLowerArm") or LocalPlayer.Character:FindFirstChild("Right Arm")
+	RightGrip2.Part1 = Tool.Handle
+
+	RightGrip2.C0 = Position
+	RightGrip2.C1 = Tool.Grip
+
+	RightGrip2.Parent = LocalPlayer.Character:FindFirstChild("RightLowerArm") or LocalPlayer.Character:FindFirstChild("Right Arm")
+
+    return RightGrip2
+end
+
 local ReplaceCharacter = function()
     NotificationSystem.Notify("Replacing Character...", 5)
 
@@ -379,6 +364,14 @@ UI.CommandBar.ImageButton.MouseButton1Click:Connect(function()
     end
 end)
 
+Players.PlayerAdded:Connect(function(Player)
+    PlayerAdded(Player);
+end)
+
+for _, Player in pairs(Players:GetPlayers()) do
+    PlayerAdded(Player);
+end
+
 local IntroGuiTweens = {
     ["Headbar"] = "BackgroundTransparency",
     ["MainText"] = "TextTransparency",
@@ -389,40 +382,6 @@ local IntroGuiTweens = {
     ["Icon"] = "ImageTransparency"
 }
 
-local MainIntroGuiTween = TweenService:Create(UI.IntroGui, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
-MainIntroGuiTween:Play()
-MainIntroGuiTween.Completed:Wait()
-
-for _, v in ipairs(UI.IntroGui:GetDescendants()) do
-    if IntroGuiTweens[v.Name] then
-        local Tween = TweenService:Create(v, TweenInfo.new(.25, Enum.EasingStyle.Quint), {[IntroGuiTweens[v.Name]] = 0})
-
-        Tween:Play()
-        Tween.Completed:wait()
-    end
-end
-
-local LoadingBarTween = TweenService:Create(UI.IntroGui.TextLabel.LoadingBar.LoadingBarThing, TweenInfo.new(5, Enum.EasingStyle.Quint), {Size = UI.IntroGui.TextLabel.LoadingBar.Size})
-LoadingBarTween:Play()
-LoadingBarTween.Completed:wait()
-
-wait(1)
-
-for _, v in ipairs(UI.IntroGui:GetDescendants()) do
-    if IntroGuiTweens[v.Name] then
-        local Tween = TweenService:Create(v, TweenInfo.new(.25, Enum.EasingStyle.Quint), {[IntroGuiTweens[v.Name]] = 1})
-
-        Tween:Play()
-        Tween.Completed:wait()
-    end
-end
-
-local MainIntroGuiTween = TweenService:Create(UI.IntroGui, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 1})
-MainIntroGuiTween:Play()
-MainIntroGuiTween.Completed:Wait()
-
-UI.IntroGui:Destroy()
-
 universalAdmin.Debounce = false
 
 universalAdmin.Events.LocalPlayerConnection = LocalPlayer.Chatted:Connect(function(Message)
@@ -432,7 +391,7 @@ universalAdmin.Events.LocalPlayerConnection = LocalPlayer.Chatted:Connect(functi
 end)
 
 --commands
-addCommand("commands/cmds", "opens commands menu", function()
+Define("commands/cmds", "opens commands menu", function()
     UI.CommandList.Visible = true
     
     local commandsTween = TweenService:Create(UI.CommandList, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
@@ -453,37 +412,37 @@ addCommand("commands/cmds", "opens commands menu", function()
     end
 end)
 
-addCommand("infjump", "makes you infinite jump", function() 
+Define("infjump", "makes you infinite jump", function() 
     universalAdmin.Events.infJump = UserInputService.JumpRequest:Connect(function()
         LocalPlayer.Character:FindFirstChild('Humanoid'):ChangeState("Jumping")
     end)
 end)
 
-addCommand("uninfjump", "stops infinite jumping", function() 
+Define("uninfjump", "stops infinite jumping", function() 
     if universalAdmin.Events.infJump then
         universalAdmin.Events.infJump:Disconnect()
     end
 end)
 
-addCommand("jumppower", "set your jump power", function(value) 
+Define("jumppower", "set your jump power", function(value) 
     LocalPlayer.Character.Humanoid.JumpPower = value
 end, "number")
 
-addCommand("walkspeed", "set your walk speed", function(value) 
+Define("walkspeed", "set your walk speed", function(value) 
     LocalPlayer.Character.Humanoid.WalkSpeed = value
 end, "number")
 
-addCommand("goto", "teleports you to a player", function(player)
+Define("goto", "teleports you to a player", function(player)
     local Target = getPlayer(player)
 
     if Target ~= nil then
-        for i, v in pairs(Target) do
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = v.Character.HumanoidRootPart.CFrame
+        for _, v in pairs(Target) do
+            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = getRoot(v.Character).CFrame
         end
     end
 end,"player")
 
-addCommand("respawnTime", "prints the respwanTime", function(player)
+Define("respawnTime", "prints the respwanTime", function(player)
     local Target = getPlayer(player)
 
     if Target ~= nil then
@@ -493,84 +452,96 @@ addCommand("respawnTime", "prints the respwanTime", function(player)
     end
 end, "player")
 
-addCommand("kill", "kills a player", function(player)
+Define("kill", "kills a player", function(player)
     local Humanoid
     local Target = getPlayer(player)
     local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
 
     if Target ~= nil then
-        if #Target == 1 then
-            if RespawnTimes[Target[1].Name] <= RespawnTimes[LocalPlayer.Name] then
-                LocalPlayer.Character:Destroy()
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - (1 / 60))
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
                 LocalPlayer.CharacterAdded:Wait()
                 LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
             end
-        else
-            LocalPlayer.Character:Destroy()
-            LocalPlayer.CharacterAdded:Wait()
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
         end
 
-        Humanoid = replaceHumanoid()
         for _, v in pairs(Target) do
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] > RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
 
                 if Tool then
-                    Tool.Parent = LocalPlayer.Character
                     Tool.Handle.Size = Vector3.new(4, 4, 4)
-        
-                    cframeTool(Tool, v.Character.HumanoidRootPart.CFrame)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 0)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 1)
+                    
+                    AttachTool(Tool, getRoot(v.Character).CFrame:ToObjectSpace(LocalPlayer.Character:FindFirstChild("Right Arm").CFrame):Inverse())
+
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
             else
                 NotificationSystem.Notify(v.Name.." could not be killed ", 5)
             end
         end
 
-        Humanoid:ChangeState(15)
-        wait(.3)
-        LocalPlayer.Character:Destroy()
+        LocalPlayer.Character.Humanoid:ChangeState(15);
+        LocalPlayer.Character = nil;
+
         LocalPlayer.CharacterAdded:Wait()
         LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
     end
 end, "player")
 
-addCommand("kill2", "kill but better/worse", function(player)
+Define("kill2", "kill but better/worse", function(player)
     local Humanoid
     local Target = getPlayer(player)
     local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
     local Destroy_;
 
     if Target ~= nil then
-        if #Target == 1 then
-            Destroy_ = true
-            if RespawnTimes[Target[1].Name] <= RespawnTimes[LocalPlayer.Name] then
-                LocalPlayer.Character:Destroy()
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - (1 / 60))
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
                 LocalPlayer.CharacterAdded:Wait()
                 LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
             end
-        else
-            LocalPlayer.Character:Destroy()
-            LocalPlayer.CharacterAdded:Wait()
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+        end
+
+        if #Target == 1 then
+            Destroy_ = true;
         end
 
         ReplaceCharacter()
         wait(Players.RespawnTime - .5)
         Humanoid = replaceHumanoid()
         for _, v in pairs(Target) do
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] > RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
 
                 if Tool then
-                    Tool.Parent = LocalPlayer.Character
                     Tool.Handle.Size = Vector3.new(4, 4, 4)
         
-                    cframeTool(Tool, v.Character.HumanoidRootPart.CFrame)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 0)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 1)
+                    AttachTool(Tool, getRoot(v.Character).CFrame:ToObjectSpace(LocalPlayer.Character:FindFirstChild("Right Arm").CFrame):Inverse())
+
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
             else
                 NotificationSystem.Notify(v.Name.." could not be killed ", 5)
@@ -588,101 +559,99 @@ addCommand("kill2", "kill but better/worse", function(player)
     end
 end, "player")
 
-
-addCommand("bring", "brings a player but better/worse", function(player)
+Define("bring", "brings a player", function(player)
     local Humanoid
     local Target = getPlayer(player)
     local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
 
     if Target ~= nil then
-        if #Target == 1 then
-            if RespawnTimes[Target[1].Name] <= RespawnTimes[LocalPlayer.Name] then
-                LocalPlayer.Character:Destroy()
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - (1 / 60))
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
                 LocalPlayer.CharacterAdded:Wait()
                 LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
             end
-        else
-            LocalPlayer.Character:Destroy()
-            LocalPlayer.CharacterAdded:Wait()
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
         end
 
-        Humanoid = replaceHumanoid()
+        local Welds = {};
+
         for _, v in pairs(Target) do
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] > RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
 
                 if Tool then
-                    Tool.Parent = LocalPlayer.Character
-                    Tool.Handle.Size = Vector3.new(4, 4, 4)
+                    local Weld = AttachTool(Tool, CFrame.new(0, 0, 0))
+
+                    table.insert(Welds, Weld);
         
-                    cframeTool(Tool, LocalPlayer.Character.HumanoidRootPart.CFrame)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 0)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 1)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
             else
                 NotificationSystem.Notify(v.Name.." could not be bringed ", 5)
             end
         end
 
-        wait(.3)
-        LocalPlayer.Character:Destroy()
-        LocalPlayer.CharacterAdded:Wait()
-        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+        wait(.3);
+
+        for _, Weld in pairs(Welds) do
+            Weld:Destroy()
+        end
     end
 end, "player")
 
-addCommand("bring2", "brings a player", function(player)
+Define("carry", "carries a player", function(player)
     local Humanoid
     local Target = getPlayer(player)
     local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-    local Destroy_;
 
     if Target ~= nil then
-        if #Target == 1 then
-            Destroy_ = true
-            if RespawnTimes[Target[1].Name] <= RespawnTimes[LocalPlayer.Name] then
-                LocalPlayer.Character:Destroy()
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - (1 / 60))
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
                 LocalPlayer.CharacterAdded:Wait()
                 LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
             end
-        else
-            LocalPlayer.Character:Destroy()
-            LocalPlayer.CharacterAdded:Wait()
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
         end
 
-        ReplaceCharacter()
-        wait(Players.RespawnTime - .5)
-        Humanoid = replaceHumanoid()
         for _, v in pairs(Target) do
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] > RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
 
                 if Tool then
-                    Tool.Parent = LocalPlayer.Character
-                    Tool.Handle.Size = Vector3.new(4, 4, 4)
+                    local Weld = AttachTool(Tool, CFrame.new(1.5, -3, 1) * CFrame.Angles(math.rad(-90), 0, 0))
         
-                    cframeTool(Tool, LocalPlayer.Character.HumanoidRootPart.CFrame)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 0)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 1)
+                    v.Character.Humanoid.PlatformStand = true
+
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
             else
                 NotificationSystem.Notify(v.Name.." could not be bringed ", 5)
             end
         end
-
-        if (Destroy_) then
-            wait(.2)
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, workspace.FallenPartsDestroyHeight + 50, 0)
-            LocalPlayer.Character:Destroy()
-        end
-        LocalPlayer.CharacterAdded:Wait()
-        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
     end
 end, "player")
 
-addCommand("teleport/tp", "teleports a player to another", function(player, player2)
+Define("teleport/tp", "teleports a player to another", function(player, player2)
     local Humanoid
     local Target = getPlayer(player)
     local teleportedTo = getPlayer(player2)
@@ -690,20 +659,25 @@ addCommand("teleport/tp", "teleports a player to another", function(player, play
 
     if Target ~= nil and teleportedTo ~= nil then
         if #teleportedTo > 1 then
-            return "💀" -- easter egg
+            return "💀"
         else
             teleportedTo = teleportedTo[1]
         end
-        if #Target == 1 then
-            if RespawnTimes[Target[1].Name] <= RespawnTimes[LocalPlayer.Name] then
-                LocalPlayer.Character:Destroy()
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - (1 / 60))
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
                 LocalPlayer.CharacterAdded:Wait()
                 LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
             end
-        else
-            LocalPlayer.Character:Destroy()
-            LocalPlayer.CharacterAdded:Wait()
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
         end
 
         for i, v in pairs(Target) do
@@ -713,19 +687,19 @@ addCommand("teleport/tp", "teleports a player to another", function(player, play
             end
         end
 
+        local Welds = {};
 
-        Humanoid = replaceHumanoid()
         for _, v in pairs(Target) do
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] > RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
 
                 if Tool then
-                    Tool.Parent = LocalPlayer.Character
-                    Tool.Handle.Size = Vector3.new(4, 4, 4)
+                    local Weld = AttachTool(Tool, (getRoot(teleportedTo.Character).CFrame * CFrame.new(0, 2.5, 0)):ToObjectSpace(LocalPlayer.Character.HumanoidRootPart.CFrame):Inverse());
         
-                    cframeTool(Tool, teleportedTo.Character.HumanoidRootPart.CFrame * CFrame.new(0, 5, 0))
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 0)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 1)
+                    table.insert(Welds, Weld);
+
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
             else
                 NotificationSystem.Notify(v.Name.." could not be teleported ", 5)
@@ -733,13 +707,64 @@ addCommand("teleport/tp", "teleports a player to another", function(player, play
         end
         
         wait(.3)
-        LocalPlayer.Character:Destroy()
-        LocalPlayer.CharacterAdded:Wait()
-        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+        for _, Weld in pairs(Welds) do
+            Weld:Destroy()
+        end
     end
 end, "player, player2")
 
-addCommand("view", "views a player", function(player)
+Define("control", "controls a player", function(player)
+    local Humanoid
+    local Target = getPlayer(player)
+    local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+
+    if Target ~= nil then
+        if #Target == 1 then
+            if RespawnTimes[Target[1].Name] >= RespawnTimes[LocalPlayer.Name] then
+                LocalPlayer.Character:Destroy()
+                LocalPlayer.CharacterAdded:Wait()
+                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                wait(.15)
+            end
+        else
+            return
+        end
+
+        local Welds = {};
+
+        for _, v in pairs(Target) do
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+                local Tool = getTool()
+
+                if Tool then
+                    Tool.Handle.CanCollide = false;
+
+                    local Weld = AttachTool(Tool, CFrame.new(-1.5, -(100 - (Tool.Handle.Size.Y/2)), 0))
+
+                    table.insert(Welds, Weld);
+
+                    getRoot(LocalPlayer.Character).CFrame = getRoot(v.Character).CFrame;
+                    LocalPlayer.Character.Humanoid.HipHeight = 100;
+
+                    LocalPlayer.Character.Animate.Disabled = true;
+
+                    v.Character.Humanoid.PlatformStand = true;
+
+                    workspace.CurrentCamera.CameraSubject = v.Character.Humanoid;
+        
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
+                end
+            else
+                NotificationSystem.Notify(v.Name.." could not be bringed ", 5)
+            end
+        end
+    end
+end, "player")
+
+Define("view", "views a player", function(player)
     local Target = getPlayer(player)
 
     if Target ~= nil then
@@ -752,16 +777,20 @@ addCommand("view", "views a player", function(player)
 end, "player")
 
 
-addCommand("refresh/re", "refreshes your character", function() 
-    local Character = LocalPlayer.Character
+Define("refresh/re", "refreshes your character", function() 
+    ReplaceCharacter();
+
+    wait(Players.RespawnTime - (1 / 60))
+
     local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
-    Character:Destroy()
+
+    LocalPlayer.Character.Humanoid:ChangeState(15);
 
     LocalPlayer.CharacterAdded:Wait()
-    LocalPlayer.Character.HumanoidRootPart.CFrame = Position
+    LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
 end)
 
-addCommand("noclip", "noclips your character", function()
+Define("noclip", "noclips your character", function()
     universalAdmin.Events.Noclip = game:GetService("RunService").Stepped:Connect(function()
         for _, v in next, LocalPlayer.Character:GetChildren() do
             if v:IsA("BasePart") and v.CanCollide then
@@ -779,56 +808,13 @@ addCommand("noclip", "noclips your character", function()
     end)
 end)
 
-addCommand("unnoclip/clip", "clips your character", function()
+Define("unnoclip/clip", "clips your character", function()
     if universalAdmin.Events.Noclip then
         universalAdmin.Events.Noclip:Disconnect()
     end
 end)
 
-addCommand("sink", "sinks a player", function(player)
-    local Target = getPlayer(player)
-
-    Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-    if Target ~= nil then
-        if #Target == 1 then
-            if RespawnTimes[Target[1].Name] <= RespawnTimes[LocalPlayer.Name] then
-                LocalPlayer.Character:Destroy()
-                LocalPlayer.CharacterAdded:Wait()
-                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
-            end
-        else
-            LocalPlayer.Character:Destroy()
-            LocalPlayer.CharacterAdded:Wait()
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
-        end
-
-        replaceHumanoid()
-        for _, v in pairs(Target) do
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] > RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
-                local Tool = getTool()
-
-                if Tool then
-                    Tool.Parent = LocalPlayer.Character
-                    Tool.Handle.Size = Vector3.new(4, 4, 4)
-        
-                    cframeTool(Tool, v.Character.HumanoidRootPart.CFrame)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 0)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 1)
-                end
-            else
-                NotificationSystem.Notify(v.Name.." could not be sunk ", 5)
-            end
-        end
-
-        local sinkTween = TweenService:Create(LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -20, 0)})
-        sinkTween:Play()
-
-        LocalPlayer.CharacterAdded:Wait()
-        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
-    end
-end, "player")
-
-addCommand("fling", "flings a player", function(player)
+Define("fling", "flings a player", function(player)
     local Target = getPlayer(player)
 
     if Target ~= nil then
@@ -836,18 +822,18 @@ addCommand("fling", "flings a player", function(player)
         local oldPos, oldVelocity = LocalPlayer.Character.HumanoidRootPart.CFrame, LocalPlayer.Character.HumanoidRootPart.Velocity
 
         for _, v in pairs(Target) do
-            local vPos = v.Character.HumanoidRootPart.Position
+            local vPos = getRoot(v.Character).Position
 
             if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Running = game:GetService("RunService").Stepped:Connect(function(step)
                     step = step - workspace.DistributedGameTime
 
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = (v.Character.HumanoidRootPart.CFrame - (Vector3.new(0, 1e6, 0) * step)) + (v.Character.HumanoidRootPart.Velocity * (step * 30))
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = (getRoot(v.Character).CFrame - (Vector3.new(0, 1e6, 0) * step)) + (getRoot(v.Character).Velocity * (step * 30))
                     LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 1e6, 0)
                 end)
                 local startTime = tick()
 
-                repeat wait() until (vPos - v.Character.HumanoidRootPart.Position).magnitude >= 60 or tick() - startTime >= 3.5
+                repeat wait() until (vPos - getRoot(v.Character).Position).magnitude >= 60 or tick() - startTime >= 3.5
                 Running:Disconnect()
             else
                 NotificationSystem.Notify(v.Name.." could not be flung ", 5)
@@ -866,36 +852,41 @@ addCommand("fling", "flings a player", function(player)
     end
 end, "player")
 
-addCommand("toolfling", "flings a player using a tool", function(player)
+Define("toolfling", "flings a player using a tool", function(player)
     local Target = getPlayer(player)
 
     local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
     if Target ~= nil then
-        if #Target == 1 then
-            if RespawnTimes[Target[1].Name] <= RespawnTimes[LocalPlayer.Name] then
-                LocalPlayer.Character:Destroy()
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - (1 / 60))
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
                 LocalPlayer.CharacterAdded:Wait()
                 LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
             end
-        else
-            LocalPlayer.Character:Destroy()
-            LocalPlayer.CharacterAdded:Wait()
-            LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
         end
 
         local newHumanoid = replaceHumanoid()
 
         for _, v in pairs(Target) do
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] > RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
 
                 if Tool then
                     Tool.Parent = LocalPlayer.Character
                     Tool.Handle.Size = Vector3.new(4, 4, 4)
         
-                    cframeTool(Tool, v.Character.HumanoidRootPart.CFrame)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 0)
-                    firetouchinterest(Tool.Handle, v.Character.HumanoidRootPart, 1)
+                    cframeTool(Tool, getRoot(v.Character).CFrame)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
 
                     repeat game:GetService("RunService").Stepped:Wait() until Tool.Parent ~= LocalPlayer.Character
                 end
@@ -918,7 +909,7 @@ addCommand("toolfling", "flings a player using a tool", function(player)
     end
 end, "player")
 
-addCommand("chatlogs", "logs chat", function()
+Define("chatlogs", "logs chat", function()
     NotificationSystem.Notify("Starting to log messages...", 5)
 
     local Has_Synapse = false;
@@ -952,7 +943,7 @@ addCommand("chatlogs", "logs chat", function()
     end
 end)
 
-addCommand("nochatlogs", "stops logging", function()
+Define("nochatlogs", "stops logging", function()
     for _, v in pairs(universalAdmin.Events.ChatLogs) do
         v:Disconnect()
         v = nil
