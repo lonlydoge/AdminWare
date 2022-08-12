@@ -1,3 +1,5 @@
+-- van inspired by rocket admin
+
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -7,19 +9,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
 local InsertService = game:GetService("InsertService")
 
-if (syn) then
-    local TranslationSystem = loadstring(game:HttpGet("https://raw.githubusercontent.com/lonlydoge/TranslationSystem/main/main.lua"))()
-end
-local NotificationSystem = loadstring(game:HttpGet("https://raw.githubusercontent.com/lonlydoge/NotificationSystem/main/main.lua"))()
-
 for i, v in pairs(CoreGui:GetChildren()) do
     if v.Name == "UI" then
         CoreGui["UI"]:Destroy()
     end
 end
-
-warn("Waiting for events to reset")
-wait(0.1)
 
 if CoreGui:FindFirstChild("UI") then
     CoreGui["UI"]:Destroy()
@@ -33,31 +27,37 @@ end
 
 local UI = InsertService:LoadLocalAsset("rbxassetid://9625648426"):Clone();
 
-local Container = UI.CommandList.ScrollBar.Container
+CommandBar = UI.CommandBar;
+CommandList = UI.CommandList;
+
+Container = CommandList.ScrollBar.Container
+Input = CommandBar.TextBox;
+CommandsImage = CommandBar.ImageButton;
 
 Container.Parent = ReplicatedStorage
 
 UI.IntroGui:Destroy()
 
-UI.CommandList.BackgroundTransparency = 1
-UI.CommandList.Visible = false
+CommandList.BackgroundTransparency = 1
+CommandList.Visible = false
 Container.TextLabel.TextTransparency = 1
 Container.TextLabel.Description.TextTransparency = 1
 
-UI.CommandBar.BackgroundTransparency = 1
-UI.CommandBar.TextBox.TextTransparency = 1
-UI.CommandBar.ImageButton.ImageTransparency = 1
-UI.CommandBar.Position = UDim2.new(0.5, 0, 1, 35)
+CommandBar.BackgroundTransparency = 1
+Input.TextTransparency = 1
+CommandsImage.ImageTransparency = 1
+CommandBar.Position = UDim2.new(0.5, 0, 1, 35)
 
 UI.Parent = game.CoreGui
 
 -- ok it finished :)
 
-local universalAdmin = {
+local Admin = {
     Commands = {},
     Prefix = ".",
     Events = {ChatLogs = {}},
-    Debounce = true,
+    Welds = {},
+    Debounce = false,
 }
 
 local RespawnTimes = {}
@@ -78,11 +78,11 @@ local function getIndex(Table, item)
     end
 end
 
-repeat task.wait() until universalAdmin["Events"];
+repeat task.wait() until Admin["Events"];
 
 local PlayerAdded = function(Player)
     RespawnTimes[Player.Name] = tick();
-    universalAdmin.Events[Player] = Player.CharacterAdded:Connect(function()
+    Admin.Events[Player] = Player.CharacterAdded:Connect(function()
         RespawnTimes[Player.Name] = tick();
     end)
 end
@@ -102,7 +102,7 @@ local getRoot = function(Character)
 end
 
 local function Define(commandname, description, mainfunction, cmdargs)
-    for i, v in pairs(universalAdmin.Commands) do
+    for i, v in pairs(Admin.Commands) do
         if string.lower(v[1]) == string.lower(commandname) then
             return nil
         end
@@ -110,9 +110,9 @@ local function Define(commandname, description, mainfunction, cmdargs)
 
     if typeof(mainfunction) == "function" then
         if cmdargs then
-            table.insert(universalAdmin.Commands, {commandname, description, mainfunction, cmdargs})
+            table.insert(Admin.Commands, {commandname, description, mainfunction, cmdargs})
         else
-            table.insert(universalAdmin.Commands, {commandname, description, mainfunction})
+            table.insert(Admin.Commands, {commandname, description, mainfunction})
         end
     else --goto line 428
         return nil
@@ -157,8 +157,9 @@ local function commandCheck(Message, CommandBar)
     
     local Splitted = string.split(Message, " ")
     local noPrefixMessage
+
     if CommandBar then
-        if string.sub(Message, 1, 1) == universalAdmin.Prefix then
+        if string.sub(Message, 1, 1) == Admin.Prefix then
             noPrefixMessage = Splitted[1]:sub(2)
         else
             noPrefixMessage = Splitted[1]
@@ -175,7 +176,7 @@ local function commandCheck(Message, CommandBar)
         end
     end
 
-    for _, v in pairs(universalAdmin.Commands) do
+    for _, v in pairs(Admin.Commands) do
         local Aliases = v[1]:lower():split("/")
             for _, Alias in pairs(Aliases) do
             if Alias == noPrefixMessage then
@@ -184,51 +185,10 @@ local function commandCheck(Message, CommandBar)
                 else
                     v[3]()
                 end
-            end
+            end 
         end
     end
 end -- wait ill test something
-
-local function openCmdBar()
-    if not universalAdmin.Debounce then
-        universalAdmin.Debounce = true
-        
-        local openCmdBarTween = TweenService:Create(UI.CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, -100)})
-        local fadeBar = TweenService:Create(UI.CommandBar, TweenInfo.new(.7, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
-        local fadeText = TweenService:Create(UI.CommandBar.TextBox, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 0})
-        local fadeIcon = TweenService:Create(UI.CommandBar.ImageButton, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 0})
-        
-        openCmdBarTween:Play()
-        fadeBar:Play()
-        fadeText:Play()
-        fadeIcon:Play()
-        
-        wait(.35)
-        
-        UI.CommandBar.TextBox:CaptureFocus()
-        universalAdmin.Debounce = false
-    end
-end 
-
-local function closeCmdBar()
-    if not universalAdmin.Debounce then
-        universalAdmin.Debounce = true
-        
-        local openCmdBarTween = TweenService:Create(UI.CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, 35)})
-        local fadeBar = TweenService:Create(UI.CommandBar, TweenInfo.new(.7, Enum.EasingStyle.Quint), {BackgroundTransparency = 1})
-        local fadeText = TweenService:Create(UI.CommandBar.TextBox, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 1})
-        local fadeIcon = TweenService:Create(UI.CommandBar.ImageButton, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 1})
-        
-        openCmdBarTween:Play()
-        fadeBar:Play()
-        fadeText:Play()
-        fadeIcon:Play()
-        
-        wait(.35)
-        
-        universalAdmin.Debounce = false
-    end
-end
 
 local cframeTool = function(tool, pos)
     local RightArm = LocalPlayer.Character:FindFirstChild("RightLowerArm") or LocalPlayer.Character:FindFirstChild("Right Arm")
@@ -240,7 +200,7 @@ end
 
 local AttachTool = function(Tool, Position)
     for _, Object in pairs(Tool:GetDescendants()) do
-        if not (Object:IsA("BasePart") or Object:IsA("Mesh") or Object:IsA("SpecialMesh")) then
+        if not Object:IsA("BasePart") then
             Object:Destroy()
         end
     end
@@ -280,9 +240,90 @@ local AttachTool = function(Tool, Position)
     return RightGrip2
 end
 
-local ReplaceCharacter = function()
-    NotificationSystem.Notify("Replacing Character...", 5)
+local GetNetlessVelocity = function(PartVelocity)
+	if PartVelocity.Y > 1 or PartVelocity.Y < -1 then
+		return PartVelocity * (25.1 / PartVelocity.Y)
+	end
 
+	PartVelocity = PartVelocity * Vector3.new(1, 0, 1)
+
+	local Magnitude = PartVelocity.Magnitude
+
+	if Magnitude > 1 then
+		PartVelocity = PartVelocity * 100 / Magnitude
+	end
+
+	return PartVelocity + Vector3.new(0, 26, 0);
+end
+
+local Align = function(Part0, Part1, Position, Rotation)
+    Part0.CustomPhysicalProperties = PhysicalProperties.new(0.0001, 0.0001, 0.0001, 0.0001, 0.0001);
+    Part0.CFrame = Part1.CFrame;
+
+    local Attachment0 = Instance.new("Attachment", Part0);
+
+    Attachment0.Orientation = Rotation or Vector3.new(0, 0, 0);
+    Attachment0.Position = Position or Vector3.new(0, 0, 0);
+
+    Attachment0.Name = Part0.Name.."_Attachment0";
+
+    local Attachment1 = Instance.new("Attachment", Part1);
+
+    Attachment1.Orientation = Vector3.new(0, 0, 0);
+    Attachment1.Position = Position or Vector3.new(0, 0, 0);
+
+    Attachment1.Name = Part1.Name.."_Attachment1";
+
+    local AlignPosition = Instance.new("AlignPosition", Attachment0);
+    AlignPosition.ApplyAtCenterOfMass = false;
+
+	AlignPosition.MaxForce = math.huge;
+	AlignPosition.MaxVelocity = math.huge;
+
+	AlignPosition.ReactionForceEnabled = false;
+
+	AlignPosition.Responsiveness = 200;
+
+	AlignPosition.Attachment1 = Attachment1;
+	AlignPosition.Attachment0 = Attachment0;
+
+	AlignPosition.RigidityEnabled = false;
+
+    local AlignOrientation = Instance.new("AlignOrientation", Attachment0);
+	AlignOrientation.MaxAngularVelocity = math.huge;
+
+	AlignOrientation.MaxTorque = math.huge;
+
+	AlignOrientation.PrimaryAxisOnly = false;
+	AlignOrientation.ReactionTorqueEnabled = false;
+
+	AlignOrientation.Responsiveness = 200;
+
+	AlignOrientation.Attachment1 = Attachment1;
+	AlignOrientation.Attachment0 = Attachment0;
+
+	AlignOrientation.RigidityEnabled = false;
+
+    local Heartbeat = game:GetService("RunService").Heartbeat:Connect(function()
+        Part0.Velocity = Vector3.new(-30, 0, 0);
+    end)
+
+    Part0.Destroying:Connect(function()
+        Part0 = nil;
+
+        Heartbeat:Disconnect()
+    end)
+
+    Attachment0.Orientation = Rotation or Vector3.new(0, 0, 0);
+    Attachment0.Position = Vector3.new(0, 0, 0);
+
+    Attachment1.Orientation = Vector3.new(0, 0, 0);
+    Attachment1.Position = Position or Vector3.new(0, 0, 0);
+
+	Part0.CFrame = Part1.CFrame
+end
+
+local ReplaceCharacter = function()
     local Char = LocalPlayer.Character
     local Model = Instance.new("Model");
     LocalPlayer.Character = Model
@@ -291,8 +332,6 @@ local ReplaceCharacter = function()
 end
 
 local replaceHumanoid = function()
-    NotificationSystem.Notify("Replacing Humanoid...", 5)
-
     local Humanoid = LocalPlayer.Character:WaitForChild("Humanoid")
     local NewHumanoid = Humanoid:Clone()
     NewHumanoid.Name = "1"
@@ -316,42 +355,68 @@ local function isAnchored(Character)
     return false
 end
 
-UI.CommandList.ScrollBar.Positioner:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    local absoluteSize = UI.CommandList.ScrollBar.Positioner.AbsoluteContentSize
-    UI.CommandList.ScrollBar.CanvasSize = UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y + 50)
+CommandList.ScrollBar.Positioner:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    local absoluteSize = CommandList.ScrollBar.Positioner.AbsoluteContentSize
+    CommandList.ScrollBar.CanvasSize = UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y + 50)
 end)
 
-universalAdmin.Events.prefixTrigger = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if not universalAdmin.Debounce then
-        if gameProcessedEvent then
-            return
-        elseif input.KeyCode == Enum.KeyCode.Semicolon then
-            openCmdBar()
+Admin.Events.PrefixTrigger = UserInputService.InputBegan:Connect(function(input, ProcessedEvent)
+    if input.KeyCode == Enum.KeyCode.Semicolon and not ProcessedEvent and not Admin.Debounce then
+        Admin.Debounce = true;
+
+        local Tweens = {}
+
+        table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, -100)}))
+        table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}))
+        table.insert(Tweens, TweenService:Create(Input, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 0}))
+        table.insert(Tweens, TweenService:Create(CommandsImage, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 0}))
+        
+        for _, Tween in pairs(Tweens) do
+            Tween:Play();
         end
+
+        wait(.05)
+
+        Input:CaptureFocus();
     end
 end)
 
-UI.CommandBar.TextBox.FocusLost:Connect(function(Enter)
-    if not universalAdmin.Debounce and Enter then
+Admin.Events.FocusLost = Input.FocusLost:Connect(function(Enter)
+    if Enter then
+        local Access = Input.Text
+
         spawn(function()
-            commandCheck(UI.CommandBar.TextBox.Text, true)
+            commandCheck(Access, true)
         end)
-        closeCmdBar()
-        UI.CommandBar.TextBox.Text = ""
+
+        local Tweens = {};
+
+        table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, 35)}))
+        table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}))
+        table.insert(Tweens, TweenService:Create(Input, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 1}))
+        table.insert(Tweens, TweenService:Create(CommandsImage, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 1}))
+        
+        for _, Tween in pairs(Tweens) do
+            Tween:Play();
+        end
+
+        Input.Text = ""
+
+        wait(.05)
+
+        Admin.Debounce = false;
     end
 end)
 
-UI.CommandBar.ImageButton.MouseButton1Click:Connect(function()
-    spawn(closeCmdBar)
+CommandsImage.MouseButton1Click:Connect(function()
+    CommandList.Visible = true
     
-    UI.CommandList.Visible = true
-    
-    local commandsTween = TweenService:Create(UI.CommandList, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+    local commandsTween = TweenService:Create(CommandList, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
     commandsTween:Play()
 
     commandsTween.Completed:Wait()
 
-    for _, v in ipairs(UI.CommandList.ScrollBar:GetDescendants()) do
+    for _, v in ipairs(CommandList.ScrollBar:GetDescendants()) do
         if v.Name == "Container" then
             local TextLabelTween = TweenService:Create(v.TextLabel, TweenInfo.new(.025, Enum.EasingStyle.Quint), {TextTransparency = 0})
             TextLabelTween:Play()
@@ -382,24 +447,39 @@ local IntroGuiTweens = {
     ["Icon"] = "ImageTransparency"
 }
 
-universalAdmin.Debounce = false
+Admin.Debounce = false
 
-universalAdmin.Events.LocalPlayerConnection = LocalPlayer.Chatted:Connect(function(Message)
-    if string.sub(Message, 1, 1) == universalAdmin.Prefix then
-        commandCheck(Message)
+Admin.Events.LocalPlayerConnection = LocalPlayer.Chatted:Connect(function(Message)
+    if string.sub(Message, 1, 1) == Admin.Prefix then
+        spawn(function()
+            commandCheck(Message, true)
+        end)
+    end
+end)
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    LocalPlayer.MaximumSimulationRadius = math.pow(math.huge, math.huge) * math.huge
+    pcall(function() sethiddenproperty(LocalPlayer, "SimulationRadius", math.pow(math.huge, math.huge) * math.huge) end)
+
+    for i, v in pairs(game.Players:GetPlayers()) do
+        if v ~= LocalPlayer then
+            LocalPlayer.MaximumSimulationRadius = math.pow(math.huge, math.huge) * math.huge
+            pcall(function() settings().Physics.AllowSleep = false ; sethiddenproperty(LocalPlayer, "SimulationRadius", math.pow(math.huge, math.huge) * math.huge) end)
+            LocalPlayer.ReplicationFocus = workspace
+        end
     end
 end)
 
 --commands
 Define("commands/cmds", "opens commands menu", function()
-    UI.CommandList.Visible = true
+    CommandList.Visible = true
     
-    local commandsTween = TweenService:Create(UI.CommandList, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
+    local commandsTween = TweenService:Create(CommandList, TweenInfo.new(.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0})
     commandsTween:Play()
 
     commandsTween.Completed:Wait()
 
-    for _, v in ipairs(UI.CommandList.ScrollBar:GetDescendants()) do
+    for _, v in ipairs(CommandList.ScrollBar:GetDescendants()) do
         if v.Name == "Container" then
             local TextLabelTween = TweenService:Create(v.TextLabel, TweenInfo.new(.025, Enum.EasingStyle.Quint), {TextTransparency = 0})
             TextLabelTween:Play()
@@ -413,14 +493,14 @@ Define("commands/cmds", "opens commands menu", function()
 end)
 
 Define("infjump", "makes you infinite jump", function() 
-    universalAdmin.Events.infJump = UserInputService.JumpRequest:Connect(function()
+    Admin.Events.infJump = UserInputService.JumpRequest:Connect(function()
         LocalPlayer.Character:FindFirstChild('Humanoid'):ChangeState("Jumping")
     end)
 end)
 
 Define("uninfjump", "stops infinite jumping", function() 
-    if universalAdmin.Events.infJump then
-        universalAdmin.Events.infJump:Disconnect()
+    if Admin.Events.infJump then
+        Admin.Events.infJump:Disconnect()
     end
 end)
 
@@ -487,8 +567,6 @@ Define("kill", "kills a player", function(player)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
-            else
-                NotificationSystem.Notify(v.Name.." could not be killed ", 5)
             end
         end
 
@@ -543,8 +621,7 @@ Define("kill2", "kill but better/worse", function(player)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
-            else
-                NotificationSystem.Notify(v.Name.." could not be killed ", 5)
+
             end
         end
 
@@ -582,7 +659,7 @@ Define("bring", "brings a player", function(player)
             end
         end
 
-        local Welds = {};
+        
 
         for _, v in pairs(Target) do
             if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
@@ -591,19 +668,17 @@ Define("bring", "brings a player", function(player)
                 if Tool then
                     local Weld = AttachTool(Tool, CFrame.new(0, 0, 0))
 
-                    table.insert(Welds, Weld);
+                    table.insert(Admin.Welds, Weld);
         
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
-            else
-                NotificationSystem.Notify(v.Name.." could not be bringed ", 5)
             end
         end
 
         wait(.3);
 
-        for _, Weld in pairs(Welds) do
+        for _, Weld in pairs(Admin.Welds) do
             Weld:Destroy()
         end
     end
@@ -641,11 +716,11 @@ Define("carry", "carries a player", function(player)
         
                     v.Character.Humanoid.PlatformStand = true
 
+                    table.insert(Admin.Welds, Weld);
+
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
-            else
-                NotificationSystem.Notify(v.Name.." could not be bringed ", 5)
             end
         end
     end
@@ -687,7 +762,7 @@ Define("teleport/tp", "teleports a player to another", function(player, player2)
             end
         end
 
-        local Welds = {};
+        
 
         for _, v in pairs(Target) do
             if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
@@ -696,19 +771,17 @@ Define("teleport/tp", "teleports a player to another", function(player, player2)
                 if Tool then
                     local Weld = AttachTool(Tool, (getRoot(teleportedTo.Character).CFrame * CFrame.new(0, 2.5, 0)):ToObjectSpace(LocalPlayer.Character.HumanoidRootPart.CFrame):Inverse());
         
-                    table.insert(Welds, Weld);
+                    table.insert(Admin.Welds, Weld);
 
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
-            else
-                NotificationSystem.Notify(v.Name.." could not be teleported ", 5)
             end
         end
         
         wait(.3)
 
-        for _, Weld in pairs(Welds) do
+        for _, Weld in pairs(Admin.Welds) do
             Weld:Destroy()
         end
     end
@@ -732,8 +805,6 @@ Define("control", "controls a player", function(player)
             return
         end
 
-        local Welds = {};
-
         for _, v in pairs(Target) do
             if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
@@ -743,12 +814,16 @@ Define("control", "controls a player", function(player)
 
                     local Weld = AttachTool(Tool, CFrame.new(-1.5, -(100 - (Tool.Handle.Size.Y/2)), 0))
 
-                    table.insert(Welds, Weld);
+                    table.insert(Admin.Welds, Weld);
 
                     getRoot(LocalPlayer.Character).CFrame = getRoot(v.Character).CFrame;
                     LocalPlayer.Character.Humanoid.HipHeight = 100;
 
                     LocalPlayer.Character.Animate.Disabled = true;
+
+                    for _, v in pairs(LocalPlayer.Character.Humanoid:GetPlayingAnimationTracks()) do
+                        v:Stop()
+                    end
 
                     v.Character.Humanoid.PlatformStand = true;
 
@@ -757,8 +832,6 @@ Define("control", "controls a player", function(player)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
                 end
-            else
-                NotificationSystem.Notify(v.Name.." could not be bringed ", 5)
             end
         end
     end
@@ -791,7 +864,7 @@ Define("refresh/re", "refreshes your character", function()
 end)
 
 Define("noclip", "noclips your character", function()
-    universalAdmin.Events.Noclip = game:GetService("RunService").Stepped:Connect(function()
+    Admin.Events.Noclip = game:GetService("RunService").Stepped:Connect(function()
         for _, v in next, LocalPlayer.Character:GetChildren() do
             if v:IsA("BasePart") and v.CanCollide then
                 v.CanCollide = false
@@ -801,16 +874,15 @@ Define("noclip", "noclips your character", function()
 
     spawn(function()
         LocalPlayer.CharacterAdded:wait()
-        if universalAdmin.Events.Noclip then
-            universalAdmin.Events.Noclip:Disconnect()
-            NotificationSystem.Notify("Noclip disabled", 5)
+        if Admin.Events.Noclip then
+            Admin.Events.Noclip:Disconnect()
         end
     end)
 end)
 
 Define("unnoclip/clip", "clips your character", function()
-    if universalAdmin.Events.Noclip then
-        universalAdmin.Events.Noclip:Disconnect()
+    if Admin.Events.Noclip then
+        Admin.Events.Noclip:Disconnect()
     end
 end)
 
@@ -824,20 +896,16 @@ Define("fling", "flings a player", function(player)
         for _, v in pairs(Target) do
             local vPos = getRoot(v.Character).Position
 
-            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
-                local Running = game:GetService("RunService").Stepped:Connect(function(step)
-                    step = step - workspace.DistributedGameTime
+            local Running = game:GetService("RunService").Stepped:Connect(function(step)
+                step = step - workspace.DistributedGameTime
 
-                    LocalPlayer.Character.HumanoidRootPart.CFrame = (getRoot(v.Character).CFrame - (Vector3.new(0, 1e6, 0) * step)) + (getRoot(v.Character).Velocity * (step * 30))
-                    LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 1e6, 0)
-                end)
-                local startTime = tick()
+                LocalPlayer.Character.HumanoidRootPart.CFrame = (getRoot(v.Character).CFrame - (Vector3.new(0, 1e6, 0) * step)) + (getRoot(v.Character).Velocity * (step * 30))
+                LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 1e6, 0)
+            end)
+            local startTime = tick()
 
-                repeat wait() until (vPos - getRoot(v.Character).Position).magnitude >= 60 or tick() - startTime >= 3.5
-                Running:Disconnect()
-            else
-                NotificationSystem.Notify(v.Name.." could not be flung ", 5)
-            end
+            repeat wait() until (vPos - getRoot(v.Character).Position).magnitude >= 60 or tick() - startTime >= 3.5
+            Running:Disconnect()
         end
         local Running = game:GetService("RunService").Stepped:Connect(function()
             LocalPlayer.Character.HumanoidRootPart.CFrame = oldPos
@@ -852,115 +920,98 @@ Define("fling", "flings a player", function(player)
     end
 end, "player")
 
-Define("toolfling", "flings a player using a tool", function(player)
+Define("van", "kidnaps player", function(player)
     local Target = getPlayer(player)
-
     local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
-    if Target ~= nil then
-        for _, v in pairs(Target) do
-            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
-                ReplaceCharacter();
 
-                wait(Players.RespawnTime - (1 / 60))
-            
-                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
-            
-                LocalPlayer.Character.Humanoid:ChangeState(15);
-            
+    if Target ~= nil then
+        if #Target == 1 then
+            if RespawnTimes[Target[1].Name] >= RespawnTimes[LocalPlayer.Name] then
+                LocalPlayer.Character:Destroy()
                 LocalPlayer.CharacterAdded:Wait()
                 LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
 
-                break
+                wait(.15)
             end
+        else
+            return
         end
-
-        local newHumanoid = replaceHumanoid()
 
         for _, v in pairs(Target) do
             if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
+                local Car = LocalPlayer.Character:FindFirstChild("MeshPartAccessory")
 
-                if Tool then
-                    Tool.Parent = LocalPlayer.Character
-                    Tool.Handle.Size = Vector3.new(4, 4, 4)
-        
-                    cframeTool(Tool, getRoot(v.Character).CFrame)
-                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
-                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
+                if Tool and Car then
+                    Tool.Handle.CanCollide = false;
+                    Car.Handle.CanCollide = false;
 
-                    repeat game:GetService("RunService").Stepped:Wait() until Tool.Parent ~= LocalPlayer.Character
+                    LocalPlayer.Character.Animate.Disabled = true;
+
+                    for _, v in pairs(LocalPlayer.Character.Humanoid:GetPlayingAnimationTracks()) do
+                        v:Stop()
+                    end
+
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = getRoot(v.Character).CFrame * CFrame.new(50, 0, -15)
+
+                    wait(.25);
+
+                    Car.Handle:BreakJoints();
+
+                    Align(Car.Handle, LocalPlayer.Character.HumanoidRootPart, Vector3.new(0, -1.5, 10), Vector3.new(0, -90, 0));
+
+                    local Tween = TweenService:Create(LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(2.5, Enum.EasingStyle.Linear), {CFrame = getRoot(v.Character).CFrame * CFrame.new(0, 0, -15);})
+
+                    Tween:Play();
+                    Tween.Completed:wait();
+
+                    wait(.5)
+
+                    AttachTool(Tool, (Car.Handle.CFrame:ToObjectSpace(LocalPlayer.Character:FindFirstChild("Right Arm").CFrame) * CFrame.new(0, 0, 1.5)):Inverse())
+
+                    v.Character.Humanoid.PlatformStand = true;
+
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0);
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1);
+
+                    wait(.5)
+
+                    local Tween = TweenService:Create(LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(2.5, Enum.EasingStyle.Linear), {CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(-100, 0, 0);})
+
+                    Tween:Play();
+                    Tween.Completed:wait();
                 end
-            else
-                NotificationSystem.Notify(v.Name.." could not be flung ", 5)
             end
         end
 
-        local Running = game:GetService("RunService").Stepped:Connect(function()
-            LocalPlayer.Character.HumanoidRootPart.Velocity = LocalPlayer.Character.HumanoidRootPart.Velocity * LocalPlayer.Character.HumanoidRootPart.Velocity
-        end)
-
-        wait(2.5);
-        LocalPlayer.Character:Destroy()
-
-        LocalPlayer.CharacterAdded:Wait()
-        Running:Disconnect()
-
-        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+        LocalPlayer.Character.Humanoid:ChangeState(15);
+        LocalPlayer.Character = nil;
     end
 end, "player")
 
-Define("chatlogs", "logs chat", function()
-    NotificationSystem.Notify("Starting to log messages...", 5)
+Define("releasewelds/rw", "releases welds", function()
+    print("here")
 
-    local Has_Synapse = false;
-
-    if (syn) then
-        Has_Synapse = true;
-        NotificationSystem.Notify("You have synapse x! Translation will be enabled.", 5)
-    else
-        NotificationSystem.Notify("You don't have synapse x! Translation will be disabled.", 5)
-        NotificationSystem.Notify("We're currently searching for a method that isn't syn x only.", 5)
-    end
-
-    Players.PlayerAdded:Connect(function(Player)
-        universalAdmin.Events.ChatLogs[Player.Name] = Player.Chatted:Connect(function(Message)
-            if Has_Synapse then
-                NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
-            else
-                NotificationSystem.Notify("<"..Player.Name.."> "..Message, 5)
-            end
-        end)
-    end)
-
-    for _, Player in pairs(Players:GetPlayers()) do
-        universalAdmin.Events.ChatLogs[Player.Name] = Player.Chatted:Connect(function(Message)
-            if Has_Synapse then
-                NotificationSystem.Notify("<"..Player.Name.."> "..TranslationSystem.translateFrom(Message), 5)
-            else
-                NotificationSystem.Notify("<"..Player.Name.."> "..Message, 5)
-            end
-        end)
+    for _, Weld in pairs(Admin.Welds) do
+        Weld:Destroy();
     end
 end)
 
 Define("nochatlogs", "stops logging", function()
-    for _, v in pairs(universalAdmin.Events.ChatLogs) do
+    for _, v in pairs(Admin.Events.ChatLogs) do
         v:Disconnect()
         v = nil
     end
-    NotificationSystem.Notify("Stopped logging messages", 5)
 end)
 
 -- end of Admin script
 
-NotificationSystem.Notify("You are ready to go!", 5)
-
-table.sort(universalAdmin.Commands, function(a, b)
+table.sort(Admin.Commands, function(a, b)
     return a[1]:lower() < b[1]:lower()
 end)
 
 
-for _, v in ipairs(universalAdmin.Commands) do
+for _, v in ipairs(Admin.Commands) do
     local clonedContainer = Container:Clone()
 
     if v[4] then
@@ -971,13 +1022,15 @@ for _, v in ipairs(universalAdmin.Commands) do
 
     clonedContainer.TextLabel.Description.Text = v[2]
     
-    clonedContainer.Parent = UI.CommandList.ScrollBar
+    clonedContainer.Parent = CommandList.ScrollBar
 end
+
+warn("thanks for using fsd' admin lil boy")
 
 spawn(function()
     repeat game:GetService("RunService").Heartbeat:wait() until not CoreGui:FindFirstChild("UI")
 
-    for i, v in pairs(universalAdmin.Events) do
+    for i, v in pairs(Admin.Events) do
         pcall(function()
             if v then
                 v:Disconnect()
@@ -985,5 +1038,5 @@ spawn(function()
         end)
     end
 
-    universalAdmin = nil
+    Admin = nil
 end)
