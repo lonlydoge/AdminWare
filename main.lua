@@ -305,7 +305,7 @@ local Align = function(Part0, Part1, Position, Rotation)
 	AlignOrientation.RigidityEnabled = false;
 
     local Heartbeat = game:GetService("RunService").Heartbeat:Connect(function()
-        Part0.Velocity = Vector3.new(-30, 0, 0);
+        Part0.Velocity = Vector3.new(30, 0, 0);
     end)
 
     Part0.Destroying:Connect(function()
@@ -938,6 +938,8 @@ Define("van", "kidnaps player", function(player)
         end
 
         for _, v in pairs(Target) do
+            print(Target)
+
             if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
                 local Car = LocalPlayer.Character:FindFirstChild("MeshPartAccessory")
@@ -967,14 +969,16 @@ Define("van", "kidnaps player", function(player)
 
                     wait(.5)
 
-                    AttachTool(Tool, (Car.Handle.CFrame:ToObjectSpace(LocalPlayer.Character:FindFirstChild("Right Arm").CFrame) * CFrame.new(0, 0, 1.5)):Inverse())
+                    AttachTool(Tool, (Car.Handle.CFrame:ToObjectSpace(LocalPlayer.Character:FindFirstChild("Right Arm").CFrame) * CFrame.new(0, -1.5, 1.5)):Inverse())
 
                     v.Character.Humanoid.PlatformStand = true;
 
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0);
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1);
 
-                    wait(.5)
+                    Tool.AncestryChanged:wait();
+
+                    wait(.15)
 
                     local Tween = TweenService:Create(LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(2.5, Enum.EasingStyle.Linear), {CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(-100, 0, 0);})
 
