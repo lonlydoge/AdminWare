@@ -31,7 +31,7 @@ CommandBar = UI.CommandBar;
 CommandList = UI.CommandList;
 
 Container = CommandList.ScrollBar.Container
-Input = CommandBar.TextBox;
+CommandInput = CommandBar.TextBox;
 CommandsImage = CommandBar.ImageButton;
 
 Container.Parent = ReplicatedStorage
@@ -44,7 +44,7 @@ Container.TextLabel.TextTransparency = 1
 Container.TextLabel.Description.TextTransparency = 1
 
 CommandBar.BackgroundTransparency = 1
-Input.TextTransparency = 1
+CommandInput.TextTransparency = 1
 CommandsImage.ImageTransparency = 1
 CommandBar.Position = UDim2.new(0.5, 0, 1, 35)
 
@@ -58,9 +58,19 @@ local Admin = {
     Events = {ChatLogs = {}},
     Welds = {},
     Debounce = false,
+    Flying = false,
 }
 
 local RespawnTimes = {}
+
+local FlyTable = {
+    ["W"] = 0,
+    ["A"] = 0,
+    ["S"] = 0,
+    ["D"] = 0,
+}
+
+local Keys = {}
 
 local function getKeyFromValue(table, value)
     for i, v in ipairs(table) do -- i want it organized
@@ -360,30 +370,49 @@ CommandList.ScrollBar.Positioner:GetPropertyChangedSignal("AbsoluteContentSize")
     CommandList.ScrollBar.CanvasSize = UDim2.new(0, absoluteSize.X, 0, absoluteSize.Y + 50)
 end)
 
-Admin.Events.PrefixTrigger = UserInputService.InputBegan:Connect(function(input, ProcessedEvent)
-    if input.KeyCode == Enum.KeyCode.Semicolon and not ProcessedEvent and not Admin.Debounce then
+Admin.Events.InputBegan = UserInputService.InputBegan:Connect(function(Input, ProcessedEvent)
+    if ProcessedEvent then
+        return
+    end
+
+    local KeyCode = tostring(Input.KeyCode):split(".")[3]
+    Keys[KeyCode] = true
+
+    if Input.KeyCode == Enum.KeyCode.Semicolon and not Admin.Debounce then
         Admin.Debounce = true;
 
         local Tweens = {}
 
         table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, -100)}))
         table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}))
-        table.insert(Tweens, TweenService:Create(Input, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 0}))
+        table.insert(Tweens, TweenService:Create(CommandInput, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 0}))
         table.insert(Tweens, TweenService:Create(CommandsImage, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 0}))
         
         for _, Tween in pairs(Tweens) do
             Tween:Play();
         end
 
-        wait(.05)
+        task.wait();
 
-        Input:CaptureFocus();
+        CommandInput:CaptureFocus();
     end
 end)
 
-Admin.Events.FocusLost = Input.FocusLost:Connect(function(Enter)
+Admin.Events.InputEnded = UserInputService.InputEnded:Connect(function(Input, ProcessedEvent)
+    if ProcessedEvent then
+        return
+    end
+    
+    local KeyCode = tostring(Input.KeyCode):split(".")[3]
+
+    if Keys[KeyCode] then
+        Keys[KeyCode] = false
+    end
+end)
+
+Admin.Events.FocusLost = CommandInput.FocusLost:Connect(function(Enter)
     if Enter then
-        local Access = Input.Text
+        local Access = CommandInput.Text
 
         spawn(function()
             commandCheck(Access, true)
@@ -393,16 +422,16 @@ Admin.Events.FocusLost = Input.FocusLost:Connect(function(Enter)
 
         table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {Position = UDim2.new(0.5, 0, 1, 35)}))
         table.insert(Tweens, TweenService:Create(CommandBar, TweenInfo.new(.75, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}))
-        table.insert(Tweens, TweenService:Create(Input, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 1}))
+        table.insert(Tweens, TweenService:Create(CommandInput, TweenInfo.new(.75, Enum.EasingStyle.Quint), {TextTransparency = 1}))
         table.insert(Tweens, TweenService:Create(CommandsImage, TweenInfo.new(.75, Enum.EasingStyle.Quint), {ImageTransparency = 1}))
         
         for _, Tween in pairs(Tweens) do
             Tween:Play();
         end
 
-        Input.Text = ""
+        CommandInput.Text = ""
 
-        wait(.05)
+        task.wait();
 
         Admin.Debounce = false;
     end
@@ -542,7 +571,7 @@ Define("kill", "kills a player", function(player)
             if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
                 ReplaceCharacter();
 
-                wait(Players.RespawnTime - (1 / 60))
+                wait(Players.RespawnTime - .10)
             
                 local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
             
@@ -589,7 +618,7 @@ Define("kill2", "kill but better/worse", function(player)
             if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
                 ReplaceCharacter();
 
-                wait(Players.RespawnTime - (1 / 60))
+                wait(Players.RespawnTime - .10)
             
                 local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
             
@@ -640,13 +669,18 @@ Define("bring", "brings a player", function(player)
     local Humanoid
     local Target = getPlayer(player)
     local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    local TWait;
 
     if Target ~= nil then
+        if #Target == 1 then
+            TWait = true;
+        end
+
         for _, v in pairs(Target) do
             if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
                 ReplaceCharacter();
 
-                wait(Players.RespawnTime - (1 / 60))
+                wait(Players.RespawnTime - .10)
             
                 local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
             
@@ -659,8 +693,6 @@ Define("bring", "brings a player", function(player)
             end
         end
 
-        
-
         for _, v in pairs(Target) do
             if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
                 local Tool = getTool()
@@ -672,14 +704,134 @@ Define("bring", "brings a player", function(player)
         
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
                     firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
+
+                    if TWait then
+                        Tool.AncestryChanged:Wait();
+                    end
                 end
             end
         end
 
-        wait(.3);
+        if not TWait then
+            wait(.5);
+        end
 
         for _, Weld in pairs(Admin.Welds) do
             Weld:Destroy()
+        end
+    end
+end, "player")
+
+Define("void", "voids a player", function(player)
+    local Humanoid
+    local Target = getPlayer(player)
+    local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+    local TWait;
+
+    if Target ~= nil then
+        if #Target == 1 then
+            TWait = true;
+        end
+
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - .10)
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
+                LocalPlayer.CharacterAdded:Wait()
+                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
+            end
+        end
+
+        for _, v in pairs(Target) do
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+                local Tool = getTool()
+
+                if Tool then
+                    local Weld = AttachTool(Tool, CFrame.new(0, workspace.FallenPartsDestroyHeight - LocalPlayer.Character.HumanoidRootPart.Position.Y, 0))
+
+                    table.insert(Admin.Welds, Weld);
+        
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
+
+                    if TWait then
+                        Tool.AncestryChanged:Wait();
+                    end
+                end
+            end
+        end
+
+        if not TWait then
+            wait(.5);
+        end
+
+        for _, Weld in pairs(Admin.Welds) do
+            Weld:Destroy()
+        end
+    end
+end, "player")
+
+Define("rape", "i don't need to explain this one", function(player)
+    local Humanoid
+    local Target = getPlayer(player)
+    local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+
+    if Target ~= nil then
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - .10)
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
+                LocalPlayer.CharacterAdded:Wait()
+                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
+            end
+        end
+
+        for _, Animation in pairs(LocalPlayer.Character.Humanoid:GetPlayingAnimationTracks()) do
+            Animation:Stop()
+        end
+
+        local Animation = Instance.new("Animation")
+        Animation.AnimationId = "rbxassetid://148840371"
+
+        local LoadedAnimation = LocalPlayer.Character.Humanoid:LoadAnimation(Animation)
+        LoadedAnimation.Looped = true
+
+        LoadedAnimation:Play(0)
+        LoadedAnimation:AdjustSpeed(5)
+
+        for _, v in pairs(Target) do
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+                local Tool = getTool()
+
+                if Tool then
+                    Tool.Handle.CanCollide = false;
+
+                    local Weld = AttachTool(Tool, CFrame.new(0.2, 4, 2) * CFrame.Angles(math.rad(90), 0, 0))                
+
+                    v.Character.Humanoid.PlatformStand = true;
+
+                    table.insert(Admin.Welds, Weld);
+
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
+                end
+            end
         end
     end
 end, "player")
@@ -694,7 +846,7 @@ Define("carry", "carries a player", function(player)
             if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
                 ReplaceCharacter();
 
-                wait(Players.RespawnTime - (1 / 60))
+                wait(Players.RespawnTime - .10)
             
                 local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
             
@@ -726,6 +878,95 @@ Define("carry", "carries a player", function(player)
     end
 end, "player")
 
+Define("dupe/dupetools", "dupes your tools", function(amount)
+    for Duped = 1, amount do
+        local Tools = {};
+
+        ReplaceCharacter();
+
+        wait(Players.RespawnTime - .10);
+            
+        local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+
+        for _, Tool in pairs(LocalPlayer.Backpack:GetChildren()) do
+            Tool.Parent = LocalPlayer.Character;
+        end
+
+        for _, Tool in pairs(LocalPlayer.Character:GetChildren()) do
+            if Tool:IsA("Tool") then
+                Tool.Parent = workspace;
+
+                table.insert(Tools, Tool)
+            end
+        end
+    
+        LocalPlayer.Character.Humanoid:ChangeState(15);
+    
+        LocalPlayer.CharacterAdded:Wait()
+        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+        for _, Tool in pairs(Tools) do
+            LocalPlayer.Character.Humanoid:EquipTool(Tool);
+        end
+
+        print(Duped)
+    end
+end, "amount")
+
+Define("fly", "flies your character", function(flyspeed)
+    if Admin.Flying == false then
+        Admin.Flying = true
+        local Character = LocalPlayer.Character
+
+        Character.Humanoid:ChangeState(8)
+
+        local BodyVelocity = Instance.new("BodyVelocity");
+        local BodyGyro = Instance.new("BodyGyro");
+
+        BodyVelocity.Parent = Character.HumanoidRootPart;
+        BodyGyro.Parent = Character.HumanoidRootPart;
+
+        BodyGyro.P = 9e9;
+        BodyGyro.MaxTorque = Vector3.new(1, 1, 1) * 9e9;
+        BodyGyro.CFrame = Character.HumanoidRootPart.CFrame;
+
+        BodyVelocity.MaxForce = Vector3.new(1, 1, 1) * 9e9;
+        BodyVelocity.Velocity = Vector3.new(0, 0.1, 0);
+
+        local Speed = 2;
+
+        if flyspeed then
+            Speed = tonumber(flyspeed)
+        end
+
+        coroutine.wrap(function()
+            while Admin.Flying do
+                FlyTable["W"] = Keys["W"] and Speed or 0
+                FlyTable["A"] = Keys["A"] and -Speed or 0
+                FlyTable["S"] = Keys["S"] and -Speed or 0
+                FlyTable["D"] = Keys["D"] and Speed or 0
+
+                if ((FlyTable["W"] + FlyTable["S"]) ~= 0 or (FlyTable["A"] + FlyTable["D"]) ~= 0) then
+                    BodyVelocity.Velocity = ((workspace.Camera.CoordinateFrame.lookVector * (FlyTable["W"] + FlyTable["S"])) + ((workspace.Camera.CoordinateFrame * CFrame.new(FlyTable["A"] + FlyTable["D"], (FlyTable["W"] + FlyTable["S"]) * 0.2, 0).p) - workspace.Camera.CoordinateFrame.p)) * 50
+                else
+                    BodyVelocity.Velocity = Vector3.new(0, 0.1, 0);
+                end
+                BodyGyro.CFrame = workspace.Camera.CoordinateFrame;
+                task.wait();
+            end
+
+            BodyVelocity:Destroy()
+            BodyGyro:Destroy()
+        end)()
+    end
+end, "speed")
+
+Define("unfly", "stops flying", function()
+    if Admin.Flying then
+        Admin.Flying = not Admin.Flying;
+    end
+end)
+
 Define("teleport/tp", "teleports a player to another", function(player, player2)
     local Humanoid
     local Target = getPlayer(player)
@@ -742,7 +983,7 @@ Define("teleport/tp", "teleports a player to another", function(player, player2)
             if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
                 ReplaceCharacter();
 
-                wait(Players.RespawnTime - (1 / 60))
+                wait(Players.RespawnTime - .10)
             
                 local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
             
@@ -837,6 +1078,8 @@ Define("control", "controls a player", function(player)
     end
 end, "player")
 
+
+
 Define("view", "views a player", function(player)
     local Target = getPlayer(player)
 
@@ -853,7 +1096,7 @@ end, "player")
 Define("refresh/re", "refreshes your character", function() 
     ReplaceCharacter();
 
-    wait(Players.RespawnTime - (1 / 60))
+    wait(Players.RespawnTime - .10)
 
     local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
 
@@ -990,6 +1233,48 @@ Define("van", "kidnaps player", function(player)
 
         LocalPlayer.Character.Humanoid:ChangeState(15);
         LocalPlayer.Character = nil;
+    end
+end, "player")
+
+Define("attach", "attaches a player to you", function(player)
+    local Humanoid
+    local Target = getPlayer(player)
+    local Position = LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame
+
+    if Target ~= nil then
+        for _, v in pairs(Target) do
+            if RespawnTimes[v.Name] >= RespawnTimes[LocalPlayer.Name] then
+                ReplaceCharacter();
+
+                wait(Players.RespawnTime - .10)
+            
+                local Position = LocalPlayer.Character.HumanoidRootPart.CFrame
+            
+                LocalPlayer.Character.Humanoid:ChangeState(15);
+            
+                LocalPlayer.CharacterAdded:Wait()
+                LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = Position
+
+                break
+            end
+        end
+
+        for _, v in pairs(Target) do
+            if v.Character and v.Character:FindFirstChild("Humanoid") and (not v.Character.Humanoid.Sit) and (RespawnTimes[v.Name] < RespawnTimes[LocalPlayer.Name]) and (not isAnchored(v.Character)) and (v.Character:FindFirstChild("Humanoid")) then
+                local Tool = getTool()
+
+                if Tool then
+                    local Weld = AttachTool(Tool, CFrame.new(0, -1.5, 0) * CFrame.Angles(math.rad(-90), 0, 0))
+        
+                    v.Character.Humanoid.PlatformStand = true
+
+                    table.insert(Admin.Welds, Weld);
+
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 0)
+                    firetouchinterest(getRoot(v.Character), Tool.Handle, 1)
+                end
+            end
+        end
     end
 end, "player")
 
